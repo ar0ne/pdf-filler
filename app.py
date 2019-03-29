@@ -1,10 +1,19 @@
 import json
+import os
 import pypdftk
 from flask import (
     Flask, make_response,
     send_file, request, abort, 
     Response, jsonify)
 from functools import wraps
+
+"""
+Alters the `PATH` and `LD_LIBRARY_PATH` environment variables to let the system know where 
+to find the binary and the GCJ dependency.
+"""
+if os.environ.get("AWS_EXECUTION_ENV") is not None:
+    os.environ['PATH'] = os.environ.get('PATH') + ':' + os.environ.get('LAMBDA_TASK_ROOT') + '/bin'
+    os.environ['LD_LIBRARY_PATH'] = os.environ.get('LAMBDA_TASK_ROOT') + '/bin'
 
 app = Flask(__name__)
 DEBUG = True
@@ -14,7 +23,7 @@ PDF_FOLDER = "pdf"
 
 SUPPORTED_PDF_FILES = ['test']
 
-def supported_pdfnames(f):
+def check_supported_pdfnames(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if request.view_args['pdfname'] not in SUPPORTED_PDF_FILES:
@@ -23,8 +32,15 @@ def supported_pdfnames(f):
     return wrapper
 
 @app.route('/pdf/<pdfname>', methods=['POST'])
-@supported_pdfnames
+@check_supported_pdfnames
 def generate_filled_pdf(pdfname):
+    """
+    Generates filled PDF file.
+
+    :body - data to be insered in PDF file (JSON).
+
+    POST: /pdf/<pdfname>
+    """
     r_json = request.get_json()
     if r_json is None:
         return abort(500, "Inpute JSON is required")
@@ -34,10 +50,12 @@ def generate_filled_pdf(pdfname):
     return send_file(pdfFilePath, attachment_filename='out.pdf')
 
 @app.route('/pdf/<pdfname>')
-@supported_pdfnames
+@check_supported_pdfnames
 def get_dump_data_fields(pdfname):
     """
-    /pdf/<pdfname>?format={pairs,keys}
+    Get dumped fields for specified pdfname. Can be formatted.
+
+    GET: /pdf/<pdfname>?format={pairs,keys}
     :pairs - list of pairs (key: value) for dumped data fields
     :keys - only dumped field names
     """

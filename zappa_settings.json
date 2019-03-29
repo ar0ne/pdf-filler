@@ -1,0 +1,9 @@
+{
+    "dev": {
+        "app_function": "app.app",
+        "profile_name": null,
+        "project_name": "pdf-filler",
+        "runtime": "python3.7",
+        "s3_bucket": "zappa-i0onfc5bm"
+    }
+}
