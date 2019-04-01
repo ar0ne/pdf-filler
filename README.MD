@@ -45,3 +45,11 @@ GET: /pdf/ - get list of supported PDF files
 GET: /pdf/<pdfname>?format={pairs,keys} - get information about fillable PDF
 POST: /pdf/<pdfname> - generate filled PDF file
 ```
+
+## Docker
+
+If you'd like to use Docker you can build own image.
+
+`$ docker build -t amazon-pdftk:latest .`
+
+`$ docker run -p 5000:5000 amazon-pdftk`
